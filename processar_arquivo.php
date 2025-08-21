@@ -27,18 +27,34 @@ if (!is_dir($diretorio)) {
     mkdir($diretorio, 0777, true);
 }
 
+// Processa novo arquivo se for upload
+$arquivo = $_FILES['arquivos'] ?? null;
+
+if ($arquivo && isset($arquivo['name'])) {
+    // Limpeza
+    $antigos = array_diff(scandir($diretorio), ['.', '..']);
+    foreach ($antigos as $file) {
+        $caminho = $diretorio . '/' . $file;
+        if (is_file($caminho)) {
+            unlink($caminho);
+        }
+    }
+
+    // Salvar os aqv
+    foreach ($arquivo['name'] as $indice => $nome) {
+        $destino = $diretorio . basename($arquivo['name'][$indice]);
+        move_uploaded_file($arquivo['tmp_name'][$indice], $destino);
+    }
+}
+
 // Lê todos os arquivos do diretorio
 $arquivos = array_diff(scandir($diretorio), ['.', '..']);
-
 $index = 0;
 
 foreach ($arquivos as $arquivo) {
-    // Monta URL pública da imagem
-    $url = "http://$server_ip/uploads/" . urlencode($arquivo);
-
-    // Verifica se é imagem 
     $ext = pathinfo($arquivo, PATHINFO_EXTENSION);
     if (in_array(strtolower($ext), ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+        $url = "http://$server_ip/uploads/" . urlencode($arquivo);
         echo "<img class='elem' id='{$index}' src='{$url}' alt=''>";
         $index++;
     }
@@ -64,7 +80,7 @@ foreach ($arquivos as $arquivo) {
             }
             img.classList.add("ativa");
             i++;
-        } else if (i >= nElem) {
+        } else {
             let imgLast = document.getElementById(`${i - 1}`);
             imgLast.classList.remove("ativa");
             i = 0;
