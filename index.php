@@ -1,3 +1,7 @@
+<?php
+  echo PHP_OS;
+  echo php_uname();
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
