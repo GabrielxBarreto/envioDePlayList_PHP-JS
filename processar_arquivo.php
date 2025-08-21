@@ -1,66 +1,75 @@
 <style>
-    *{
-        margin:0;
-        padding:0;
-
+    * {
+        margin: 0;
+        padding: 0;
     }
-    img{
+
+    img {
         display: none;
     }
-    .ativa{
-        display:block; 
+
+    .ativa {
+        display: block;
         width: 100vw;
         height: 100vh;
     }
 </style>
+
 <?php 
-$diretorio = __DIR__."\\uploads\\";
+// IP do servidor
+$server_ip = '192.168.100.3';
 
-$arquivo = $_FILES['arquivos']?? null; 
+// Diretório de para onde as imagens vão
+$diretorio = __DIR__ . "/uploads/";
+
+// Verifica se diretório existe
 if (!is_dir($diretorio)) {
-    mkdir($diretorio, 0755, true);
-    
+    mkdir($diretorio, 0777, true);
 }
 
+// Lê todos os arquivos do diretorio
+$arquivos = array_diff(scandir($diretorio), ['.', '..']);
 
-foreach($arquivo['name'] as $nameIndicie => $valor){
-    $destino = $diretorio.basename($arquivo['name'][$nameIndicie]);
-    move_uploaded_file($arquivo['tmp_name'][$nameIndicie],$destino);
-}
+$index = 0;
 
-foreach($arquivo['name'] as $nameIndicie => $valor){
-    echo "<img class='elem' id = '{$nameIndicie}'src='uploads/".basename($arquivo['name'][$nameIndicie])."' alt='' srcset=''>";
+foreach ($arquivos as $arquivo) {
+    // Monta URL pública da imagem
+    $url = "http://$server_ip/uploads/" . urlencode($arquivo);
+
+    // Verifica se é imagem 
+    $ext = pathinfo($arquivo, PATHINFO_EXTENSION);
+    if (in_array(strtolower($ext), ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+        echo "<img class='elem' id='{$index}' src='{$url}' alt=''>";
+        $index++;
+    }
 }
 ?>
+
 <script>
     let i = 0;
     let nElem = 0;
-    document.addEventListener("DOMContentLoaded", function() {
-    nElem = document.querySelectorAll('.elem').length;
+
+    document.addEventListener("DOMContentLoaded", function () {
+        nElem = document.querySelectorAll('.elem').length;
     });
-    function funcUpdate(){
-        console.log(nElem);
+
+    function funcUpdate() {
+        if (nElem === 0) return;
+
         let img = document.getElementById(`${i}`);
-       if(i<nElem){
-        
-        if(i!=0){
-          let imgAnterior = document.getElementById(`${i-1}`);  
-          imgAnterior.classList.remove("ativa");
+        if (i < nElem) {
+            if (i != 0) {
+                let imgAnterior = document.getElementById(`${i - 1}`);
+                imgAnterior.classList.remove("ativa");
+            }
+            img.classList.add("ativa");
+            i++;
+        } else if (i >= nElem) {
+            let imgLast = document.getElementById(`${i - 1}`);
+            imgLast.classList.remove("ativa");
+            i = 0;
         }
-        img.classList.toggle("ativa");
-        
-        i++;
-       }else if (i>=nElem){
-        let imgLast = document.getElementById(`${i-1}`);
-        imgLast.classList.toggle("ativa");
-        i = 0;
-       
-        
-       }
     }
+
     setInterval(funcUpdate, 2000);
-
 </script>
-
-
-
